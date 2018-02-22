@@ -1,4 +1,4 @@
-unit uTransportData;
+unit uTransportServer;
 
 interface
 
@@ -7,7 +7,7 @@ uses
   uROServer, uROCustomHTTPServer, uROBaseHTTPServer, uROIndyHTTPServer;
 
 type
-  TTransportData = class(TDataModule)
+  TTransportServer = class(TDataModule)
     MainHTTPServer: TROIndyHTTPServer;
     ROBinMessage: TROBinMessage;
     ROJSONMessage: TROJSONMessage;
@@ -15,15 +15,29 @@ type
     { Private declarations }
   public
     { Public declarations }
+    procedure Start;
+    procedure Stop;
   end;
 
 var
-  TransportData: TTransportData;
+  TransportServer: TTransportServer;
 
 implementation
 
 {%CLASSGROUP 'Vcl.Controls.TControl'}
 
 {$R *.dfm}
+
+{ TTransportData }
+
+procedure TTransportServer.Start;
+begin
+  MainHTTPServer.Active := true;
+end;
+
+procedure TTransportServer.Stop;
+begin
+  MainHTTPServer.Active := false;
+end;
 
 end.

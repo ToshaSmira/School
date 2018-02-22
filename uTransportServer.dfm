@@ -1,4 +1,4 @@
-object TransportData: TTransportData
+object TransportServer: TTransportServer
   OldCreateOrder = False
   Height = 150
   Width = 215
