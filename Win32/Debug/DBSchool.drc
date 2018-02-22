@@ -1292,8 +1292,8 @@ END
 
 /* c:\program files (x86)\embarcadero\rad studio\12.0\lib\Win32\release\midas.res */
 /* c:\program files (x86)\embarcadero\rad studio\12.0\lib\Win32\release\controls.res */
-/* D:\Dev\!Tests\Service\uSchoolNTService.dfm */
+/* D:\Dev\!Tests\Service\School\uSchoolNTService.dfm */
 /* C:\Program Files (x86)\Embarcadero\RAD Studio\OurComponents\RemObjects\RemObjects SDK for Delphi\Source\uROHtmlServerInfo.res */
-/* D:\Dev\!Tests\Service\uTransportData.dfm */
-/* D:\Dev\!Tests\Service\DBSchool.res */
-/* D:\Dev\!Tests\Service\DBSchool.drf */
+/* D:\Dev\!Tests\Service\School\uTransportData.dfm */
+/* D:\Dev\!Tests\Service\School\DBSchool.res */
+/* D:\Dev\!Tests\Service\School\DBSchool.drf */
