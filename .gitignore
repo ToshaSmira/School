@@ -26,8 +26,7 @@
 #*.obj
 #
 
-Win32
-Win32\Debug\
+Win32/*.*
 
 # Delphi compiler-generated binaries (safe to delete)
 *.exe
