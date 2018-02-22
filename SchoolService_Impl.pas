@@ -60,12 +60,12 @@ end;
 
 function TSchoolService.GetNameServer: AnsiString;
 begin
-  result := 'SchoolService';
+  {$Message Hint 'GetNameServer is not implemented yet!'}
 end;
 
 function TSchoolService.GetDateTimeServer: DateTime;
 begin
-  Result := Now;
+  {$Message Hint 'GetDateTimeServer is not implemented yet!'}
 end;
 
 initialization
