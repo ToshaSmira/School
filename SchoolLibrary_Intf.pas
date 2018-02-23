@@ -49,7 +49,7 @@ type
   end;
 
   ISchoolService_Async = interface(IROAsyncInterface)
-  ['{25711b63-833a-40d1-80a6-fa7f9ec26416}']
+  ['{405f4d58-3da1-4f2d-9959-3006a9e8537e}']
     procedure Invoke_GetNameServer;
     procedure Invoke_GetDateTimeServer;
     function Retrieve_GetNameServer: AnsiString;
@@ -57,7 +57,7 @@ type
   end;
 
   ISchoolService_AsyncEx = interface(IROAsyncInterfaceEx)
-  ['{16a5f247-8c9e-4f2e-9d0f-6cf91fa68684}']
+  ['{61cc909f-fab6-4c41-a13c-5ff8c7ce2dc6}']
     function BeginGetNameServer(const aCallback: TROAsyncCallback; const aUserData: Pointer = nil): IROAsyncRequest;
     function BeginGetDateTimeServer(const aCallback: TROAsyncCallback; const aUserData: Pointer = nil): IROAsyncRequest;
     function EndGetNameServer(const aRequest: IROAsyncRequest): AnsiString;
