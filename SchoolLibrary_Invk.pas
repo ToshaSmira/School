@@ -33,6 +33,7 @@ type
   published
     procedure Invoke_GetNameServer(const __Instance: IInterface; const __Message: IROMessage; const __Transport: IROTransport; out __oResponseOptions: TROResponseOptions);
     procedure Invoke_GetDateTimeServer(const __Instance: IInterface; const __Message: IROMessage; const __Transport: IROTransport; out __oResponseOptions: TROResponseOptions);
+    procedure Invoke_GetPupilsList(const __Instance: IInterface; const __Message: IROMessage; const __Transport: IROTransport; out __oResponseOptions: TROResponseOptions);
   end;
 
 implementation
@@ -91,6 +92,40 @@ begin
 
   finally
     __lintf := nil;
+  end;
+end;
+
+procedure TSchoolService_Invoker.Invoke_GetPupilsList(const __Instance: IInterface; const __Message: IROMessage; const __Transport: IROTransport; out __oResponseOptions: TROResponseOptions);
+var
+  l_aPupilsList: SchoolLibrary_Intf.roPupilsView;
+  lResult: Boolean;
+  __lObjectDisposer: TROObjectDisposer;
+  __lintf: SchoolLibrary_Intf.ISchoolService;
+begin
+  CheckRoles(__Instance, GetDefaultServiceRoles());
+  l_aPupilsList := nil;
+  try
+    if not Supports(__Instance, ISchoolService, __lintf) then begin
+      raise EIntfCastError.Create('Critical error in TSchoolService_Invoker.Invoke_GetPupilsList: __Instance does not support SchoolService interface');
+    end;
+
+
+    lResult := __lintf.GetPupilsList(l_aPupilsList);
+
+    __Message.InitializeResponseMessage(__Transport, 'SchoolLibrary', 'SchoolService', 'GetPupilsListResponse');
+    __Message.Write('Result', System.TypeInfo(Boolean), lResult, []);
+    __Message.Write('aPupilsList', System.TypeInfo(SchoolLibrary_Intf.roPupilsView), l_aPupilsList, []);
+    __Message.Finalize();
+    __Message.UnsetAttributes(__Transport);
+
+  finally
+    __lintf := nil;
+    __lObjectDisposer := TROObjectDisposer.Create(__Instance);
+    try
+      __lObjectDisposer.Add(l_aPupilsList);
+    finally
+      __lObjectDisposer.Free();
+    end;
   end;
 end;
 

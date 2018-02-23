@@ -1,0 +1,30 @@
+MAINICON ICON "MainIcon.ico"
+
+1 VERSIONINFO
+FILEVERSION 1,0,0,1
+PRODUCTVERSION 1,0,0,1
+FILEOS 0x4
+FILETYPE 0x1
+{
+BLOCK "StringFileInfo"
+{
+	BLOCK "040904E4"
+	{
+		VALUE "CompanyName", "Zasio Enterprises, Inc.\0"
+		VALUE "FileDescription", "Versatile Cloud: Administrative Console (x64)\0"
+		VALUE "FileVersion", "1.0.0.1\0"
+		VALUE "InternalName", "\000"
+		VALUE "LegalCopyright", "Zasio Enterprises, Inc.\0"
+		VALUE "LegalTrademarks", "\000"
+		VALUE "OriginalFilename", "\000"
+		VALUE "ProductName", "Versatile Cloud System\0"
+		VALUE "ProductVersion", "1.0.0\0"
+	}
+}
+
+BLOCK "VarFileInfo"
+{
+	VALUE "Translation", 0x0409 0x04E4
+}
+}
+

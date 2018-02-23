@@ -17,15 +17,36 @@
 </Parameter>
 </Parameters>
 </Operation>
+<Operation Name="GetPupilsList" UID="{6A13EEB3-6771-438D-8401-8B3A9A5B12CD}">
+<Parameters>
+<Parameter Name="Result" DataType="Boolean" Flag="Result">
+</Parameter>
+<Parameter Name="aPupilsList" DataType="roPupilsView" Flag="Out" >
+</Parameter>
+</Parameters>
+</Operation>
 </Operations>
 </Interface>
 </Interfaces>
 </Service>
 </Services>
 <Structs>
+<Struct Name="roPupil" UID="{ADD6DCDD-130B-44BB-AE84-CCB56F5DB560}" AutoCreateParams="1">
+<Elements>
+<Element Name="AutoIndex" DataType="Integer">
+</Element>
+<Element Name="FirstName" DataType="AnsiString">
+</Element>
+<Element Name="LastName" DataType="AnsiString">
+</Element>
+</Elements>
+</Struct>
 </Structs>
 <Enums>
 </Enums>
 <Arrays>
+<Array Name="roPupilsView" UID="{B547A945-06E4-48CA-A550-0CBC87865173}">
+<ElementType DataType="roPupil" />
+</Array>
 </Arrays>
 </Library>

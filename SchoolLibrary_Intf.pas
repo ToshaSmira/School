@@ -35,6 +35,10 @@ type
   ISchoolService = interface;
   ISchoolService_Async = interface;
   ISchoolService_AsyncEx = interface;
+  roPupil = class;
+  roPupilCollection = class;
+  roPupilsView = class;
+  roPupilsViewEnumerator = class;
   CoSchoolService = class;
   CoSchoolService_Async = class;
   CoSchoolService_AsyncEx = class;
@@ -42,26 +46,103 @@ type
   TSchoolService_AsyncProxy = class;
   TSchoolService_AsyncProxyEx = class;
 
+  roPupil = class(TROComplexType)
+  private
+    fAutoIndex: Integer;
+    fFirstName: AnsiString;
+    fLastName: AnsiString;
+  protected
+    procedure FreeInternalProperties; override;
+  public
+    procedure Assign(aSource: TPersistent); override;
+    procedure ReadComplex(aSerializer: TObject); override;
+    procedure WriteComplex(aSerializer: TObject); override;
+  published
+    property AutoIndex: Integer read fAutoIndex write fAutoIndex;
+    property FirstName: AnsiString read fFirstName write fFirstName;
+    property LastName: AnsiString read fLastName write fLastName;
+  end;
+
+  roPupilCollection = class(TROCollection)
+  protected
+    constructor Create(aItemClass: TCollectionItemClass); overload;
+    function GetItems(aIndex: Integer): roPupil;
+    procedure SetItems(aIndex: Integer; const Value: roPupil);
+  public
+    constructor Create; overload;
+    function Add: roPupil; reintroduce;
+    procedure LoadFromArray(anArray: roPupilsView);
+    procedure SaveToArray(anArray: roPupilsView);
+    property Items[Index: Integer]: roPupil read GetItems write SetItems; default;
+  end;
+
+  roPupilsView_roPupil = array of roPupil;
+
+  roPupilsView = class(TROArray)
+  private
+    fCount: Integer;
+    fItems: roPupilsView_roPupil;
+  protected
+    procedure Grow; virtual;
+    function GetItems(aIndex: Integer): roPupil;
+    procedure SetItems(aIndex: Integer; Value: roPupil);
+    function GetCount: Integer; override;
+  public
+    class function GetItemType: PTypeInfo; override;
+    class function GetItemClass: System.TClass; override;
+    class function GetItemSize: Integer; override;
+    function GetItemRef(aIndex: Integer): Pointer; override;
+    procedure SetItemRef(aIndex: Integer; Ref: Pointer); override;
+    procedure Clear; override;
+    procedure Delete(aIndex: Integer); override;
+    procedure Resize(anElementCount: Integer); override;
+    procedure Assign(aSource: TPersistent); override;
+    procedure ReadComplex(aSerializer: TObject); override;
+    procedure WriteComplex(aSerializer: TObject); override;
+    function Add(Value: roPupil): Integer; overload;
+    function Add: roPupil; overload;
+    function GetEnumerator: roPupilsViewEnumerator;
+    property Count: Integer read GetCount;
+    property Items[Index: Integer]: roPupil read GetItems write SetItems; default;
+    property InnerArray: roPupilsView_roPupil read fItems;
+  end;
+
+  roPupilsViewEnumerator = class(TObject)
+  private
+    fArray: roPupilsView;
+    fCurrentIndex: Integer;
+    function GetCurrent: roPupil;
+  public
+    constructor Create(anArray: roPupilsView);
+    function MoveNext: Boolean;
+    property Current: roPupil read GetCurrent;
+  end;
+
   ISchoolService = interface(IROService)
   ['{ae5ce650-28f8-4964-b230-6346f14b0188}']
     function GetNameServer: AnsiString;
     function GetDateTimeServer: DateTime;
+    function GetPupilsList(out aPupilsList: roPupilsView): Boolean;
   end;
 
   ISchoolService_Async = interface(IROAsyncInterface)
-  ['{405f4d58-3da1-4f2d-9959-3006a9e8537e}']
+  ['{67644341-5d14-48f4-a472-99ed78e379fe}']
     procedure Invoke_GetNameServer;
     procedure Invoke_GetDateTimeServer;
+    procedure Invoke_GetPupilsList;
     function Retrieve_GetNameServer: AnsiString;
     function Retrieve_GetDateTimeServer: DateTime;
+    function Retrieve_GetPupilsList(out aPupilsList: roPupilsView): Boolean;
   end;
 
   ISchoolService_AsyncEx = interface(IROAsyncInterfaceEx)
-  ['{61cc909f-fab6-4c41-a13c-5ff8c7ce2dc6}']
+  ['{4a13f189-d782-41bc-a4b7-b82fa9f574bc}']
     function BeginGetNameServer(const aCallback: TROAsyncCallback; const aUserData: Pointer = nil): IROAsyncRequest;
     function BeginGetDateTimeServer(const aCallback: TROAsyncCallback; const aUserData: Pointer = nil): IROAsyncRequest;
+    function BeginGetPupilsList(const aCallback: TROAsyncCallback; const aUserData: Pointer = nil): IROAsyncRequest;
     function EndGetNameServer(const aRequest: IROAsyncRequest): AnsiString;
     function EndGetDateTimeServer(const aRequest: IROAsyncRequest): DateTime;
+    function EndGetPupilsList(out aPupilsList: roPupilsView; const aRequest: IROAsyncRequest): Boolean;
   end;
 
   CoSchoolService = class(System.TObject)
@@ -90,6 +171,7 @@ type
     function __GetInterfaceName: String; override;
     function GetNameServer: AnsiString;
     function GetDateTimeServer: DateTime;
+    function GetPupilsList(out aPupilsList: roPupilsView): Boolean;
   end;
 
   TSchoolService_AsyncProxy = class(TROAsyncProxy, ISchoolService_Async)
@@ -97,8 +179,10 @@ type
     function __GetInterfaceName: String; override;
     procedure Invoke_GetNameServer;
     procedure Invoke_GetDateTimeServer;
+    procedure Invoke_GetPupilsList;
     function Retrieve_GetNameServer: AnsiString;
     function Retrieve_GetDateTimeServer: DateTime;
+    function Retrieve_GetPupilsList(out aPupilsList: roPupilsView): Boolean;
   end;
 
   TSchoolService_AsyncProxyEx = class(TROAsyncProxyEx, ISchoolService_AsyncEx)
@@ -106,8 +190,10 @@ type
     function __GetInterfaceName: String; override;
     function BeginGetNameServer(const aCallback: TROAsyncCallback; const aUserData: Pointer = nil): IROAsyncRequest;
     function BeginGetDateTimeServer(const aCallback: TROAsyncCallback; const aUserData: Pointer = nil): IROAsyncRequest;
+    function BeginGetPupilsList(const aCallback: TROAsyncCallback; const aUserData: Pointer = nil): IROAsyncRequest;
     function EndGetNameServer(const aRequest: IROAsyncRequest): AnsiString;
     function EndGetDateTimeServer(const aRequest: IROAsyncRequest): DateTime;
+    function EndGetPupilsList(out aPupilsList: roPupilsView; const aRequest: IROAsyncRequest): Boolean;
   end;
 
 function DefaultNamespaces: String;
@@ -135,6 +221,413 @@ type
 
   TMyTransportChannel = class(TROTransportChannel)
   end;
+
+procedure roPupil.FreeInternalProperties;
+begin
+end;
+
+procedure roPupil.Assign(aSource: TPersistent);
+var
+  lSource: roPupil;
+begin
+  inherited Assign(aSource);
+  if aSource.InheritsFrom(roPupil) then begin
+    lSource := roPupil(aSource);
+
+    Self.AutoIndex := lSource.AutoIndex;
+    Self.FirstName := lSource.FirstName;
+    Self.LastName := lSource.LastName;
+  end;
+end;
+
+procedure roPupil.ReadComplex(aSerializer: TObject);
+var
+  __Serializer: TROSerializer;
+  l_AutoIndex: Integer;
+  l_FirstName: AnsiString;
+  l_LastName: AnsiString;
+begin
+  __Serializer := TROSerializer(aSerializer);
+  ;
+  if __Serializer.RecordStrictOrder then begin
+    l_AutoIndex := Self.AutoIndex;
+    try
+      __Serializer.ReadInteger('AutoIndex', otSLong, l_AutoIndex);
+    except
+      on E: Exception do begin
+        uROClasses.RaiseError('Exception "%s" with message "%s" happens during reading field "%s".', [E.ClassName(), E.Message, 'AutoIndex']);
+      end;
+    end;
+    Self.AutoIndex := l_AutoIndex;
+    l_FirstName := Self.FirstName;
+    try
+      __Serializer.ReadAnsiString('FirstName', l_FirstName);
+    except
+      on E: Exception do begin
+        uROClasses.RaiseError('Exception "%s" with message "%s" happens during reading field "%s".', [E.ClassName(), E.Message, 'FirstName']);
+      end;
+    end;
+    Self.FirstName := l_FirstName;
+    l_LastName := Self.LastName;
+    try
+      __Serializer.ReadAnsiString('LastName', l_LastName);
+    except
+      on E: Exception do begin
+        uROClasses.RaiseError('Exception "%s" with message "%s" happens during reading field "%s".', [E.ClassName(), E.Message, 'LastName']);
+      end;
+    end;
+    Self.LastName := l_LastName;
+  end
+  else begin
+    l_AutoIndex := Self.AutoIndex;
+    try
+      __Serializer.ReadInteger('AutoIndex', otSLong, l_AutoIndex);
+    except
+      on E: Exception do begin
+        uROClasses.RaiseError('Exception "%s" with message "%s" happens during reading field "%s".', [E.ClassName(), E.Message, 'AutoIndex']);
+      end;
+    end;
+    Self.AutoIndex := l_AutoIndex;
+    l_FirstName := Self.FirstName;
+    try
+      __Serializer.ReadAnsiString('FirstName', l_FirstName);
+    except
+      on E: Exception do begin
+        uROClasses.RaiseError('Exception "%s" with message "%s" happens during reading field "%s".', [E.ClassName(), E.Message, 'FirstName']);
+      end;
+    end;
+    Self.FirstName := l_FirstName;
+    l_LastName := Self.LastName;
+    try
+      __Serializer.ReadAnsiString('LastName', l_LastName);
+    except
+      on E: Exception do begin
+        uROClasses.RaiseError('Exception "%s" with message "%s" happens during reading field "%s".', [E.ClassName(), E.Message, 'LastName']);
+      end;
+    end;
+    Self.LastName := l_LastName;
+  end;
+end;
+
+procedure roPupil.WriteComplex(aSerializer: TObject);
+var
+  __Serializer: TROSerializer;
+  l_AutoIndex: Integer;
+  l_FirstName: AnsiString;
+  l_LastName: AnsiString;
+begin
+  __Serializer := TROSerializer(aSerializer);
+  ;
+  if __Serializer.RecordStrictOrder then begin
+    __Serializer.ChangeClass(roPupil);
+    l_AutoIndex := Self.AutoIndex;
+    __Serializer.WriteInteger('AutoIndex', otSLong, l_AutoIndex);
+    l_FirstName := Self.FirstName;
+    __Serializer.WriteAnsiString('FirstName', l_FirstName);
+    l_LastName := Self.LastName;
+    __Serializer.WriteAnsiString('LastName', l_LastName);
+  end
+  else begin
+    l_AutoIndex := Self.AutoIndex;
+    __Serializer.WriteInteger('AutoIndex', otSLong, l_AutoIndex);
+    l_FirstName := Self.FirstName;
+    __Serializer.WriteAnsiString('FirstName', l_FirstName);
+    l_LastName := Self.LastName;
+    __Serializer.WriteAnsiString('LastName', l_LastName);
+  end;
+end;
+
+constructor roPupilCollection.Create(aItemClass: TCollectionItemClass);
+begin
+  inherited Create(aItemClass);
+end;
+
+function roPupilCollection.GetItems(aIndex: Integer): roPupil;
+begin
+  result := roPupil(inherited Items[aIndex]);
+  exit;
+end;
+
+procedure roPupilCollection.SetItems(aIndex: Integer; const Value: roPupil);
+var
+  lvalue: roPupil;
+begin
+  lvalue := roPupil(inherited Items[aIndex]);
+  ;
+  lvalue.Assign(Value);
+end;
+
+constructor roPupilCollection.Create;
+begin
+  inherited Create(roPupil);
+end;
+
+function roPupilCollection.Add: roPupil;
+begin
+  result := roPupil(inherited Add());
+  exit;
+end;
+
+procedure roPupilCollection.LoadFromArray(anArray: roPupilsView);
+var
+  i: Integer;
+begin
+  Self.Clear();
+  for i := 0 to anArray.Count - 1 do
+    if assigned(anArray[i]) then begin
+      anArray[i].Clone().Collection := Self;
+    end;
+end;
+
+procedure roPupilCollection.SaveToArray(anArray: roPupilsView);
+var
+  i: Integer;
+begin
+  anArray.Clear();
+  for i := 0 to Self.Count - 1 do
+    if assigned(Self.Items[i]) then begin
+      anArray.Add(roPupil(Self.Items[i].Clone()));
+    end
+    else begin
+      anArray.Add(nil);
+    end;
+end;
+
+procedure roPupilsView.Grow;
+var
+  lDelta: Integer;
+  lCapacity: Integer;
+begin
+  lCapacity := System.Length(fItems);
+  if lCapacity > 64 then begin
+    lDelta := lCapacity div 4;
+  end
+  else begin
+    if lCapacity > 8 then begin
+      lDelta := 16;
+    end
+    else begin
+      lDelta := 4;
+    end;
+  end;
+  System.SetLength(fItems, lCapacity + lDelta);
+end;
+
+function roPupilsView.GetItems(aIndex: Integer): roPupil;
+begin
+  if (aIndex < 0) or (aIndex >= fCount) then begin
+    uROClasses.RaiseError(err_ArrayIndexOutOfBounds, [aIndex]);
+  end;
+  result := fItems[aIndex];
+  exit;
+end;
+
+procedure roPupilsView.SetItems(aIndex: Integer; Value: roPupil);
+begin
+  if (aIndex < 0) or (aIndex >= fCount) then begin
+    uROClasses.RaiseError(err_ArrayIndexOutOfBounds, [aIndex]);
+  end;
+  if fItems[aIndex] <> Value then begin
+    fItems[aIndex].Free();
+    fItems[aIndex] := Value;
+  end;
+end;
+
+function roPupilsView.GetCount: Integer;
+begin
+  result := fCount;
+  exit;
+end;
+
+class function roPupilsView.GetItemType: PTypeInfo;
+begin
+  result := System.TypeInfo(roPupil);
+  exit;
+end;
+
+class function roPupilsView.GetItemClass: System.TClass;
+begin
+  result := roPupil;
+  exit;
+end;
+
+class function roPupilsView.GetItemSize: Integer;
+begin
+  result := sizeOf(roPupil);
+  exit;
+end;
+
+function roPupilsView.GetItemRef(aIndex: Integer): Pointer;
+begin
+  if (aIndex < 0) or (aIndex >= fCount) then begin
+    uROClasses.RaiseError(err_ArrayIndexOutOfBounds, [aIndex]);
+  end;
+  result := fItems[aIndex];
+  exit;
+end;
+
+procedure roPupilsView.SetItemRef(aIndex: Integer; Ref: Pointer);
+begin
+  if (aIndex < 0) or (aIndex >= fCount) then begin
+    uROClasses.RaiseError(err_ArrayIndexOutOfBounds, [aIndex]);
+  end;
+  if Ref <> fItems[aIndex] then begin
+    if assigned(fItems[aIndex]) then begin
+      fItems[aIndex].Free();
+    end;
+    fItems[aIndex] := roPupil(Ref);
+  end;
+end;
+
+procedure roPupilsView.Clear;
+var
+  i: Integer;
+begin
+  for i := 0 to fCount - 1 do
+    fItems[i].Free();
+  System.SetLength(fItems, 0);
+  fCount := 0;
+end;
+
+procedure roPupilsView.Delete(aIndex: Integer);
+var
+  i: Integer;
+begin
+  if aIndex >= fCount then begin
+    uROClasses.RaiseError(err_InvalidIndex, [aIndex]);
+  end;
+
+  fItems[aIndex].Free();
+
+  if aIndex < (fCount - 1) then begin
+    for i := aIndex to fCount - 2 do
+      fItems[i] := fItems[i + 1];
+  end;
+  System.SetLength(fItems, fCount - 1);
+  fCount := fCount - 1;
+end;
+
+procedure roPupilsView.Resize(anElementCount: Integer);
+var
+  i: Integer;
+begin
+  if fCount = anElementCount then begin
+    exit;
+  end;
+  for i := fCount - 1 downto anElementCount do
+    fItems[i].Free();
+  System.SetLength(fItems, anElementCount);
+  for i := fCount to anElementCount - 1 do
+    fItems[i] := roPupil.Create();
+  fCount := anElementCount;
+end;
+
+procedure roPupilsView.Assign(aSource: TPersistent);
+var
+  lSource: roPupilsView;
+  i: Integer;
+  lItem: roPupil;
+begin
+  if aSource.InheritsFrom(roPupilsView) then begin
+    lSource := roPupilsView(aSource);
+    Self.Clear();
+
+    for i := 0 to lSource.Count - 1 do
+      if assigned(lSource.Items[i]) then begin
+        lItem := roPupil(lSource.Items[i].Clone());
+        Self.Add(lItem);
+      end
+      else begin
+        Self.Add(nil);
+      end;
+  end
+  else begin
+    inherited Assign(aSource);
+  end;
+end;
+
+procedure roPupilsView.ReadComplex(aSerializer: TObject);
+var
+  __Serializer: TROSerializer;
+  lval: roPupil;
+  i: Integer;
+begin
+  __Serializer := TROSerializer(aSerializer);
+  ;
+  for i := 0 to fCount - 1 do begin
+    __Serializer.ReadStruct(__Serializer.GetArrayElementName(GetItemType(), GetItemRef(i)), roPupil, lval, i);
+    Self.Items[i] := lval;
+  end;
+end;
+
+procedure roPupilsView.WriteComplex(aSerializer: TObject);
+var
+  __Serializer: TROSerializer;
+  i: Integer;
+begin
+  __Serializer := TROSerializer(aSerializer);
+  ;
+  __Serializer.ChangeClass(roPupilsView);
+  for i := 0 to fCount - 1 do begin
+    __Serializer.WriteStruct(__Serializer.GetArrayElementName(GetItemType(), GetItemRef(i)), fItems[i], roPupil, i);
+  end;
+end;
+
+function roPupilsView.Add(Value: roPupil): Integer;
+var
+  lResult: Integer;
+begin
+  lResult := fCount;
+  ;
+  if System.Length(fItems) = lResult then begin
+    Self.Grow();
+  end;
+  fItems[lResult] := Value;
+  fCount := fCount + 1;
+  result := lResult;
+  exit;
+end;
+
+function roPupilsView.Add: roPupil;
+var
+  lres: roPupil;
+begin
+  lres := roPupil.Create();
+  Self.Add(lres);
+  result := lres;
+  exit;
+end;
+
+function roPupilsView.GetEnumerator: roPupilsViewEnumerator;
+begin
+  result := roPupilsViewEnumerator.Create(Self);
+  exit;
+end;
+
+function roPupilsViewEnumerator.GetCurrent: roPupil;
+begin
+  result := fArray.Items[fCurrentIndex];
+  exit;
+end;
+
+constructor roPupilsViewEnumerator.Create(anArray: roPupilsView);
+begin
+  inherited Create();
+  fArray := anArray;
+  fCurrentIndex := -1;
+end;
+
+function roPupilsViewEnumerator.MoveNext: Boolean;
+var
+  lResult: Boolean;
+begin
+  lResult := fCurrentIndex < (fArray.Count - 1);
+  if lResult then begin
+    fCurrentIndex := fCurrentIndex + 1;
+  end;
+  result := lResult;
+  exit;
+end;
 
 class function CoSchoolService.Create(const aMessage: IROMessage; aTransportChannel: IROTransportChannel): ISchoolService;
 begin
@@ -248,6 +741,34 @@ begin
   exit;
 end;
 
+function TSchoolService_Proxy.GetPupilsList(out aPupilsList: roPupilsView): Boolean;
+var
+  lMessage: IROMessage;
+  lTransportChannel: IROTransportChannel;
+  lResult: Boolean;
+begin
+  lMessage := __GetMessage();
+  lMessage.SetAutoGeneratedNamespaces(DefaultNamespaces());
+  lTransportChannel := __TransportChannel;
+  try
+    aPupilsList := nil;
+    lMessage.InitializeRequestMessage(lTransportChannel, 'SchoolLibrary', __InterfaceName, 'GetPupilsList');
+    lMessage.Finalize();
+
+    lTransportChannel.Dispatch(lMessage);
+
+    lMessage.Read('Result', System.TypeInfo(Boolean), lResult, []);
+    lMessage.Read('aPupilsList', System.TypeInfo(roPupilsView), aPupilsList, []);
+  finally
+    lMessage.UnsetAttributes(lTransportChannel);
+    lMessage.FreeStream();
+    lMessage := nil;
+    lTransportChannel := nil;
+  end;
+  result := lResult;
+  exit;
+end;
+
 function TSchoolService_AsyncProxy.__GetInterfaceName: String;
 begin
   result := 'SchoolService';
@@ -287,6 +808,26 @@ begin
 
     lMessage.InitializeRequestMessage(lTransportChannel, 'SchoolLibrary', __InterfaceName, 'GetDateTimeServer');
     __DispatchAsyncRequest('GetDateTimeServer', lMessage);
+  finally
+    lMessage.UnsetAttributes(lTransportChannel);
+    lMessage := nil;
+    lTransportChannel := nil;
+  end;
+end;
+
+procedure TSchoolService_AsyncProxy.Invoke_GetPupilsList;
+var
+  lMessage: IROMessage;
+  lTransportChannel: IROTransportChannel;
+begin
+  lMessage := __GetMessage();
+  lMessage.SetAutoGeneratedNamespaces(DefaultNamespaces());
+  lTransportChannel := __TransportChannel;
+  try
+    __AssertProxyNotBusy('GetPupilsList');
+
+    lMessage.InitializeRequestMessage(lTransportChannel, 'SchoolLibrary', __InterfaceName, 'GetPupilsList');
+    __DispatchAsyncRequest('GetPupilsList', lMessage);
   finally
     lMessage.UnsetAttributes(lTransportChannel);
     lMessage := nil;
@@ -402,6 +943,62 @@ begin
   exit;
 end;
 
+function TSchoolService_AsyncProxy.Retrieve_GetPupilsList(out aPupilsList: roPupilsView): Boolean;
+var
+  __response: TStream;
+  tc: TMyTransportChannel;
+  lRetry: Boolean;
+  lMessage: IROMessage;
+  lTransportChannel: IROTransportChannel;
+  lFreeStream: Boolean;
+  lResult: Boolean;
+begin
+  lMessage := __GetMessage();
+  lMessage.SetAutoGeneratedNamespaces(DefaultNamespaces());
+  lTransportChannel := __TransportChannel;
+  lFreeStream := false;
+  try
+    aPupilsList := nil;
+    __response := __RetrieveAsyncResponse('GetPupilsList');
+    try
+      try
+        try
+          lMessage.ReadFromStream(__response, lFreeStream);
+        except
+          on E: Exception do begin
+            lFreeStream := true;
+            raise;
+          end;
+        end;
+
+        lMessage.Read('Result', System.TypeInfo(Boolean), lResult, []);
+        lMessage.Read('aPupilsList', System.TypeInfo(roPupilsView), aPupilsList, []);
+      except
+        on E: EROSessionNotFound do begin
+          tc := TMyTransportChannel(lTransportChannel.GetTransportObject());
+          lRetry := false;
+          tc.DoLoginNeeded(lMessage, E, lRetry);
+          if not lRetry then begin
+            raise;
+          end;
+        end;
+        on E: Exception do begin
+          raise;
+        end;
+      end;
+    finally
+      if lFreeStream then begin
+        __response.Free();
+      end;
+    end;
+  finally
+    lMessage := nil;
+    lTransportChannel := nil;
+  end;
+  result := lResult;
+  exit;
+end;
+
 function TSchoolService_AsyncProxyEx.__GetInterfaceName: String;
 begin
   result := 'SchoolService';
@@ -448,6 +1045,26 @@ begin
   exit;
 end;
 
+function TSchoolService_AsyncProxyEx.BeginGetPupilsList(const aCallback: TROAsyncCallback; const aUserData: Pointer = nil): IROAsyncRequest;
+var
+  lMessage: IROMessage;
+  lTransportChannel: IROTransportChannel;
+  lResult: IROAsyncRequest;
+begin
+  lMessage := __GetMessage();
+  lMessage.SetAutoGeneratedNamespaces(DefaultNamespaces());
+  lTransportChannel := __TransportChannel;
+  try
+    lMessage.InitializeRequestMessage(lTransportChannel, 'SchoolLibrary', __InterfaceName, 'GetPupilsList');
+    lResult := __DispatchAsyncRequest(lMessage, aCallback, aUserData);
+  finally
+    lMessage := nil;
+    lTransportChannel := nil;
+  end;
+  result := lResult;
+  exit;
+end;
+
 function TSchoolService_AsyncProxyEx.EndGetNameServer(const aRequest: IROAsyncRequest): AnsiString;
 var
   lResult: AnsiString;
@@ -470,9 +1087,26 @@ begin
   exit;
 end;
 
+function TSchoolService_AsyncProxyEx.EndGetPupilsList(out aPupilsList: roPupilsView; const aRequest: IROAsyncRequest): Boolean;
+var
+  lResult: Boolean;
+begin
+  aPupilsList := nil;
+  aRequest.ReadResponse();
+  aRequest.Message.SetAutoGeneratedNamespaces(DefaultNamespaces());
+  aRequest.Message.Read('Result', System.TypeInfo(Boolean), lResult, []);
+  aRequest.Message.Read('aPupilsList', System.TypeInfo(roPupilsView), aPupilsList, []);
+  result := lResult;
+  exit;
+end;
+
 initialization
+  RegisterROClass(roPupil, DefaultNamespace);
+  RegisterROClass(roPupilsView, DefaultNamespace);
   RegisterProxyClass(ISchoolService_IID, TSchoolService_Proxy);
 finalization
+  UnregisterROClass(roPupil, DefaultNamespace);
+  UnregisterROClass(roPupilsView, DefaultNamespace);
   UnregisterProxyClass(ISchoolService_IID);
 end.
 

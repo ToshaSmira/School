@@ -34,6 +34,7 @@ type
   public
     function GetNameServer: AnsiString; virtual;
     function GetDateTimeServer: DateTime; virtual;
+    function GetPupilsList(out aPupilsList: roPupilsView): Boolean; virtual;
   end;
 
 implementation
@@ -49,7 +50,7 @@ implementation
 {$ENDIF}
 
 uses
-  SchoolLibrary_Invk;
+  uDBDataManager, SchoolLibrary_Invk;
 
 var fClassFactory_SchoolService: IROClassFactory;
 
@@ -61,6 +62,11 @@ end;
 function TSchoolService.GetNameServer: AnsiString;
 begin
   result := 'SchoolService';
+end;
+
+function TSchoolService.GetPupilsList(out aPupilsList: roPupilsView): Boolean;
+begin
+  Result := DataManager.GetPupils(aPupilsList);
 end;
 
 function TSchoolService.GetDateTimeServer: DateTime;
