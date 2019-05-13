@@ -15,6 +15,7 @@ interface
 uses
   {$IFDEF DELPHIXE2UP}System.SysUtils{$ELSE}SysUtils{$ENDIF},
   {$IFDEF DELPHIXE2UP}System.Classes{$ELSE}Classes{$ENDIF},
+  uROEncoding,
   uROXMLIntf,
   uROServer,
   uROServerIntf,
@@ -39,6 +40,7 @@ type
 implementation
 
 uses
+  uROSystem,
   uROEventRepository,
   uRORes,
   uROClient;
@@ -51,7 +53,7 @@ end;
 
 procedure TSchoolService_Invoker.Invoke_GetNameServer(const __Instance: IInterface; const __Message: IROMessage; const __Transport: IROTransport; out __oResponseOptions: TROResponseOptions);
 var
-  lResult: AnsiString;
+  lResult: UnicodeString;
   __lintf: SchoolLibrary_Intf.ISchoolService;
 begin
   CheckRoles(__Instance, GetDefaultServiceRoles());
@@ -62,8 +64,8 @@ begin
 
     lResult := __lintf.GetNameServer();
 
-    __Message.InitializeResponseMessage(__Transport, 'SchoolLibrary', 'SchoolService', 'GetNameServerResponse');
-    __Message.Write('Result', System.TypeInfo(AnsiString), lResult, []);
+    __Message.InitializeResponseMessage(__Transport, 'SchoolLibrary', __Message.InterfaceName, 'GetNameServerResponse');
+    __Message.Write('Result', System.TypeInfo(UnicodeString), lResult, []);
     __Message.Finalize();
     __Message.UnsetAttributes(__Transport);
 
@@ -85,7 +87,7 @@ begin
 
     lResult := __lintf.GetDateTimeServer();
 
-    __Message.InitializeResponseMessage(__Transport, 'SchoolLibrary', 'SchoolService', 'GetDateTimeServerResponse');
+    __Message.InitializeResponseMessage(__Transport, 'SchoolLibrary', __Message.InterfaceName, 'GetDateTimeServerResponse');
     __Message.Write('Result', System.TypeInfo(DateTime), lResult, [paIsDateTime]);
     __Message.Finalize();
     __Message.UnsetAttributes(__Transport);
@@ -112,7 +114,7 @@ begin
 
     lResult := __lintf.GetPupilsList(l_aPupilsList);
 
-    __Message.InitializeResponseMessage(__Transport, 'SchoolLibrary', 'SchoolService', 'GetPupilsListResponse');
+    __Message.InitializeResponseMessage(__Transport, 'SchoolLibrary', __Message.InterfaceName, 'GetPupilsListResponse');
     __Message.Write('Result', System.TypeInfo(Boolean), lResult, []);
     __Message.Write('aPupilsList', System.TypeInfo(SchoolLibrary_Intf.roPupilsView), l_aPupilsList, []);
     __Message.Finalize();
@@ -124,7 +126,7 @@ begin
     try
       __lObjectDisposer.Add(l_aPupilsList);
     finally
-      __lObjectDisposer.Free();
+      FreeOrDisposeOf(__lObjectDisposer);
     end;
   end;
 end;

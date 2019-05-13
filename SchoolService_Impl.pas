@@ -32,7 +32,8 @@ type
 
   TSchoolService = class(TRORemoteDataModule, ISchoolService)
   public
-    function GetNameServer: AnsiString; virtual;
+    function GetNameServer: UnicodeString; virtual;
+    //function GetNameServer: AnsiString; virtual;
     function GetDateTimeServer: DateTime; virtual;
     function GetPupilsList(out aPupilsList: roPupilsView): Boolean; virtual;
   end;
@@ -59,7 +60,7 @@ begin
   anInstance := TSchoolService.Create(nil);
 end;
 
-function TSchoolService.GetNameServer: AnsiString;
+function TSchoolService.GetNameServer: UnicodeString;
 begin
   result := 'SchoolService';
 end;

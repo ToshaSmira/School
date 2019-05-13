@@ -7,7 +7,7 @@
 <Operations>
 <Operation Name="GetNameServer" UID="{8F43500A-5CDB-46F5-A450-C5C2D7925793}">
 <Parameters>
-<Parameter Name="Result" DataType="AnsiString" Flag="Result">
+<Parameter Name="Result" DataType="WideString" Flag="Result">
 </Parameter>
 </Parameters>
 </Operation>

@@ -16,6 +16,7 @@ uses
   {$IFDEF DELPHIXE2UP}System.SysUtils{$ELSE}SysUtils{$ENDIF},
   {$IFDEF DELPHIXE2UP}System.Classes{$ELSE}Classes{$ENDIF},
   {$IFDEF DELPHIXE2UP}System.TypInfo{$ELSE}TypInfo{$ENDIF},
+  uROEncoding,
   uROUri,
   uROProxy,
   uROExceptions,
@@ -26,9 +27,9 @@ uses
   uROAsync,
   uROEventReceiver;
 
-const LibraryUID = '{D8ADC254-CD2D-4D5D-842B-FACD2B8C4169}';
-const DefaultNamespace = 'SchoolLibrary';
-const TargetNamespace = 'SchoolLibrary';
+const LibraryUID: String = '{D8ADC254-CD2D-4D5D-842B-FACD2B8C4169}';
+const DefaultNamespace: String = 'SchoolLibrary';
+const TargetNamespace: String = 'SchoolLibrary';
 const ISchoolService_IID: TGUID = '{AE5CE650-28F8-4964-B230-6346F14B0188}';
 type
   { Forward declarations }
@@ -49,8 +50,8 @@ type
   roPupil = class(TROComplexType)
   private
     fAutoIndex: Integer;
-    fFirstName: AnsiString;
-    fLastName: AnsiString;
+    fFirstName: ROAnsiString;
+    fLastName: ROAnsiString;
   protected
     procedure FreeInternalProperties; override;
   public
@@ -59,8 +60,8 @@ type
     procedure WriteComplex(aSerializer: TObject); override;
   published
     property AutoIndex: Integer read fAutoIndex write fAutoIndex;
-    property FirstName: AnsiString read fFirstName write fFirstName;
-    property LastName: AnsiString read fLastName write fLastName;
+    property FirstName: ROAnsiString read fFirstName write fFirstName;
+    property LastName: ROAnsiString read fLastName write fLastName;
   end;
 
   roPupilCollection = class(TROCollection)
@@ -87,6 +88,7 @@ type
     function GetItems(aIndex: Integer): roPupil;
     procedure SetItems(aIndex: Integer; Value: roPupil);
     function GetCount: Integer; override;
+    procedure IntResize(anElementCount: Integer; AllocItems: Boolean); override;
   public
     class function GetItemType: PTypeInfo; override;
     class function GetItemClass: System.TClass; override;
@@ -95,7 +97,6 @@ type
     procedure SetItemRef(aIndex: Integer; Ref: Pointer); override;
     procedure Clear; override;
     procedure Delete(aIndex: Integer); override;
-    procedure Resize(anElementCount: Integer); override;
     procedure Assign(aSource: TPersistent); override;
     procedure ReadComplex(aSerializer: TObject); override;
     procedure WriteComplex(aSerializer: TObject); override;
@@ -119,28 +120,26 @@ type
   end;
 
   ISchoolService = interface(IROService)
-  ['{ae5ce650-28f8-4964-b230-6346f14b0188}']
-    function GetNameServer: AnsiString;
+  ['{AE5CE650-28F8-4964-B230-6346F14B0188}']
+    function GetNameServer: UnicodeString;
     function GetDateTimeServer: DateTime;
     function GetPupilsList(out aPupilsList: roPupilsView): Boolean;
   end;
 
   ISchoolService_Async = interface(IROAsyncInterface)
-  ['{67644341-5d14-48f4-a472-99ed78e379fe}']
     procedure Invoke_GetNameServer;
     procedure Invoke_GetDateTimeServer;
     procedure Invoke_GetPupilsList;
-    function Retrieve_GetNameServer: AnsiString;
+    function Retrieve_GetNameServer: UnicodeString;
     function Retrieve_GetDateTimeServer: DateTime;
     function Retrieve_GetPupilsList(out aPupilsList: roPupilsView): Boolean;
   end;
 
   ISchoolService_AsyncEx = interface(IROAsyncInterfaceEx)
-  ['{4a13f189-d782-41bc-a4b7-b82fa9f574bc}']
     function BeginGetNameServer(const aCallback: TROAsyncCallback; const aUserData: Pointer = nil): IROAsyncRequest;
     function BeginGetDateTimeServer(const aCallback: TROAsyncCallback; const aUserData: Pointer = nil): IROAsyncRequest;
     function BeginGetPupilsList(const aCallback: TROAsyncCallback; const aUserData: Pointer = nil): IROAsyncRequest;
-    function EndGetNameServer(const aRequest: IROAsyncRequest): AnsiString;
+    function EndGetNameServer(const aRequest: IROAsyncRequest): UnicodeString;
     function EndGetDateTimeServer(const aRequest: IROAsyncRequest): DateTime;
     function EndGetPupilsList(out aPupilsList: roPupilsView; const aRequest: IROAsyncRequest): Boolean;
   end;
@@ -169,7 +168,7 @@ type
   TSchoolService_Proxy = class(TROProxy, ISchoolService)
   protected
     function __GetInterfaceName: String; override;
-    function GetNameServer: AnsiString;
+    function GetNameServer: UnicodeString;
     function GetDateTimeServer: DateTime;
     function GetPupilsList(out aPupilsList: roPupilsView): Boolean;
   end;
@@ -180,7 +179,7 @@ type
     procedure Invoke_GetNameServer;
     procedure Invoke_GetDateTimeServer;
     procedure Invoke_GetPupilsList;
-    function Retrieve_GetNameServer: AnsiString;
+    function Retrieve_GetNameServer: UnicodeString;
     function Retrieve_GetDateTimeServer: DateTime;
     function Retrieve_GetPupilsList(out aPupilsList: roPupilsView): Boolean;
   end;
@@ -191,7 +190,7 @@ type
     function BeginGetNameServer(const aCallback: TROAsyncCallback; const aUserData: Pointer = nil): IROAsyncRequest;
     function BeginGetDateTimeServer(const aCallback: TROAsyncCallback; const aUserData: Pointer = nil): IROAsyncRequest;
     function BeginGetPupilsList(const aCallback: TROAsyncCallback; const aUserData: Pointer = nil): IROAsyncRequest;
-    function EndGetNameServer(const aRequest: IROAsyncRequest): AnsiString;
+    function EndGetNameServer(const aRequest: IROAsyncRequest): UnicodeString;
     function EndGetDateTimeServer(const aRequest: IROAsyncRequest): DateTime;
     function EndGetPupilsList(out aPupilsList: roPupilsView; const aRequest: IROAsyncRequest): Boolean;
   end;
@@ -200,6 +199,7 @@ function DefaultNamespaces: String;
 implementation
 
 uses
+  uROSystem,
   uROSerializer,
   uROClient,
   uROTransportChannel,
@@ -210,7 +210,6 @@ var
   lres: String;
 begin
   lres := DefaultNamespace;
-  ;
   result := lres;
   exit;
 end;
@@ -244,11 +243,10 @@ procedure roPupil.ReadComplex(aSerializer: TObject);
 var
   __Serializer: TROSerializer;
   l_AutoIndex: Integer;
-  l_FirstName: AnsiString;
-  l_LastName: AnsiString;
+  l_FirstName: ROAnsiString;
+  l_LastName: ROAnsiString;
 begin
   __Serializer := TROSerializer(aSerializer);
-  ;
   if __Serializer.RecordStrictOrder then begin
     l_AutoIndex := Self.AutoIndex;
     try
@@ -261,7 +259,7 @@ begin
     Self.AutoIndex := l_AutoIndex;
     l_FirstName := Self.FirstName;
     try
-      __Serializer.ReadAnsiString('FirstName', l_FirstName);
+      __Serializer.ReadLegacyString('FirstName', l_FirstName, [paAsAnsiString]);
     except
       on E: Exception do begin
         uROClasses.RaiseError('Exception "%s" with message "%s" happens during reading field "%s".', [E.ClassName(), E.Message, 'FirstName']);
@@ -270,7 +268,7 @@ begin
     Self.FirstName := l_FirstName;
     l_LastName := Self.LastName;
     try
-      __Serializer.ReadAnsiString('LastName', l_LastName);
+      __Serializer.ReadLegacyString('LastName', l_LastName, [paAsAnsiString]);
     except
       on E: Exception do begin
         uROClasses.RaiseError('Exception "%s" with message "%s" happens during reading field "%s".', [E.ClassName(), E.Message, 'LastName']);
@@ -290,7 +288,7 @@ begin
     Self.AutoIndex := l_AutoIndex;
     l_FirstName := Self.FirstName;
     try
-      __Serializer.ReadAnsiString('FirstName', l_FirstName);
+      __Serializer.ReadLegacyString('FirstName', l_FirstName, [paAsAnsiString]);
     except
       on E: Exception do begin
         uROClasses.RaiseError('Exception "%s" with message "%s" happens during reading field "%s".', [E.ClassName(), E.Message, 'FirstName']);
@@ -299,7 +297,7 @@ begin
     Self.FirstName := l_FirstName;
     l_LastName := Self.LastName;
     try
-      __Serializer.ReadAnsiString('LastName', l_LastName);
+      __Serializer.ReadLegacyString('LastName', l_LastName, [paAsAnsiString]);
     except
       on E: Exception do begin
         uROClasses.RaiseError('Exception "%s" with message "%s" happens during reading field "%s".', [E.ClassName(), E.Message, 'LastName']);
@@ -313,27 +311,26 @@ procedure roPupil.WriteComplex(aSerializer: TObject);
 var
   __Serializer: TROSerializer;
   l_AutoIndex: Integer;
-  l_FirstName: AnsiString;
-  l_LastName: AnsiString;
+  l_FirstName: ROAnsiString;
+  l_LastName: ROAnsiString;
 begin
   __Serializer := TROSerializer(aSerializer);
-  ;
   if __Serializer.RecordStrictOrder then begin
     __Serializer.ChangeClass(roPupil);
     l_AutoIndex := Self.AutoIndex;
     __Serializer.WriteInteger('AutoIndex', otSLong, l_AutoIndex);
     l_FirstName := Self.FirstName;
-    __Serializer.WriteAnsiString('FirstName', l_FirstName);
+    __Serializer.WriteLegacyString('FirstName', l_FirstName, [paAsAnsiString]);
     l_LastName := Self.LastName;
-    __Serializer.WriteAnsiString('LastName', l_LastName);
+    __Serializer.WriteLegacyString('LastName', l_LastName, [paAsAnsiString]);
   end
   else begin
     l_AutoIndex := Self.AutoIndex;
     __Serializer.WriteInteger('AutoIndex', otSLong, l_AutoIndex);
     l_FirstName := Self.FirstName;
-    __Serializer.WriteAnsiString('FirstName', l_FirstName);
+    __Serializer.WriteLegacyString('FirstName', l_FirstName, [paAsAnsiString]);
     l_LastName := Self.LastName;
-    __Serializer.WriteAnsiString('LastName', l_LastName);
+    __Serializer.WriteLegacyString('LastName', l_LastName, [paAsAnsiString]);
   end;
 end;
 
@@ -353,7 +350,6 @@ var
   lvalue: roPupil;
 begin
   lvalue := roPupil(inherited Items[aIndex]);
-  ;
   lvalue.Assign(Value);
 end;
 
@@ -428,7 +424,7 @@ begin
     uROClasses.RaiseError(err_ArrayIndexOutOfBounds, [aIndex]);
   end;
   if fItems[aIndex] <> Value then begin
-    fItems[aIndex].Free();
+    FreeOrDisposeOf(fItems[aIndex]);
     fItems[aIndex] := Value;
   end;
 end;
@@ -437,6 +433,26 @@ function roPupilsView.GetCount: Integer;
 begin
   result := fCount;
   exit;
+end;
+
+procedure roPupilsView.IntResize(anElementCount: Integer; AllocItems: Boolean);
+var
+  i: Integer;
+begin
+  if fCount = anElementCount then begin
+    exit;
+  end;
+  for i := fCount - 1 downto anElementCount do
+    FreeOrDisposeOf(fItems[i]);
+  System.SetLength(fItems, anElementCount);
+  for i := fCount to anElementCount - 1 do
+    if AllocItems then begin
+      fItems[i] := roPupil.Create();
+    end
+    else begin
+      fItems[i] := nil;
+    end;
+  fCount := anElementCount;
 end;
 
 class function roPupilsView.GetItemType: PTypeInfo;
@@ -473,7 +489,7 @@ begin
   end;
   if Ref <> fItems[aIndex] then begin
     if assigned(fItems[aIndex]) then begin
-      fItems[aIndex].Free();
+      FreeOrDisposeOf(fItems[aIndex]);
     end;
     fItems[aIndex] := roPupil(Ref);
   end;
@@ -484,7 +500,7 @@ var
   i: Integer;
 begin
   for i := 0 to fCount - 1 do
-    fItems[i].Free();
+    FreeOrDisposeOf(fItems[i]);
   System.SetLength(fItems, 0);
   fCount := 0;
 end;
@@ -497,7 +513,7 @@ begin
     uROClasses.RaiseError(err_InvalidIndex, [aIndex]);
   end;
 
-  fItems[aIndex].Free();
+  FreeOrDisposeOf(fItems[aIndex]);
 
   if aIndex < (fCount - 1) then begin
     for i := aIndex to fCount - 2 do
@@ -505,21 +521,6 @@ begin
   end;
   System.SetLength(fItems, fCount - 1);
   fCount := fCount - 1;
-end;
-
-procedure roPupilsView.Resize(anElementCount: Integer);
-var
-  i: Integer;
-begin
-  if fCount = anElementCount then begin
-    exit;
-  end;
-  for i := fCount - 1 downto anElementCount do
-    fItems[i].Free();
-  System.SetLength(fItems, anElementCount);
-  for i := fCount to anElementCount - 1 do
-    fItems[i] := roPupil.Create();
-  fCount := anElementCount;
 end;
 
 procedure roPupilsView.Assign(aSource: TPersistent);
@@ -553,7 +554,6 @@ var
   i: Integer;
 begin
   __Serializer := TROSerializer(aSerializer);
-  ;
   for i := 0 to fCount - 1 do begin
     __Serializer.ReadStruct(__Serializer.GetArrayElementName(GetItemType(), GetItemRef(i)), roPupil, lval, i);
     Self.Items[i] := lval;
@@ -566,7 +566,6 @@ var
   i: Integer;
 begin
   __Serializer := TROSerializer(aSerializer);
-  ;
   __Serializer.ChangeClass(roPupilsView);
   for i := 0 to fCount - 1 do begin
     __Serializer.WriteStruct(__Serializer.GetArrayElementName(GetItemType(), GetItemRef(i)), fItems[i], roPupil, i);
@@ -578,7 +577,6 @@ var
   lResult: Integer;
 begin
   lResult := fCount;
-  ;
   if System.Length(fItems) = lResult then begin
     Self.Grow();
   end;
@@ -689,11 +687,11 @@ begin
   exit;
 end;
 
-function TSchoolService_Proxy.GetNameServer: AnsiString;
+function TSchoolService_Proxy.GetNameServer: UnicodeString;
 var
   lMessage: IROMessage;
   lTransportChannel: IROTransportChannel;
-  lResult: AnsiString;
+  lResult: UnicodeString;
 begin
   lMessage := __GetMessage();
   lMessage.SetAutoGeneratedNamespaces(DefaultNamespaces());
@@ -704,7 +702,7 @@ begin
 
     lTransportChannel.Dispatch(lMessage);
 
-    lMessage.Read('Result', System.TypeInfo(AnsiString), lResult, []);
+    lMessage.Read('Result', System.TypeInfo(UnicodeString), lResult, []);
   finally
     lMessage.UnsetAttributes(lTransportChannel);
     lMessage.FreeStream();
@@ -835,7 +833,7 @@ begin
   end;
 end;
 
-function TSchoolService_AsyncProxy.Retrieve_GetNameServer: AnsiString;
+function TSchoolService_AsyncProxy.Retrieve_GetNameServer: UnicodeString;
 var
   __response: TStream;
   tc: TMyTransportChannel;
@@ -843,7 +841,7 @@ var
   lMessage: IROMessage;
   lTransportChannel: IROTransportChannel;
   lFreeStream: Boolean;
-  lResult: AnsiString;
+  lResult: UnicodeString;
 begin
   lMessage := __GetMessage();
   lMessage.SetAutoGeneratedNamespaces(DefaultNamespaces());
@@ -862,7 +860,7 @@ begin
           end;
         end;
 
-        lMessage.Read('Result', System.TypeInfo(AnsiString), lResult, []);
+        lMessage.Read('Result', System.TypeInfo(UnicodeString), lResult, []);
       except
         on E: EROSessionNotFound do begin
           tc := TMyTransportChannel(lTransportChannel.GetTransportObject());
@@ -878,7 +876,7 @@ begin
       end;
     finally
       if lFreeStream then begin
-        __response.Free();
+        FreeOrDisposeOf(__response);
       end;
     end;
   finally
@@ -932,7 +930,7 @@ begin
       end;
     finally
       if lFreeStream then begin
-        __response.Free();
+        FreeOrDisposeOf(__response);
       end;
     end;
   finally
@@ -988,7 +986,7 @@ begin
       end;
     finally
       if lFreeStream then begin
-        __response.Free();
+        FreeOrDisposeOf(__response);
       end;
     end;
   finally
@@ -1065,13 +1063,13 @@ begin
   exit;
 end;
 
-function TSchoolService_AsyncProxyEx.EndGetNameServer(const aRequest: IROAsyncRequest): AnsiString;
+function TSchoolService_AsyncProxyEx.EndGetNameServer(const aRequest: IROAsyncRequest): UnicodeString;
 var
-  lResult: AnsiString;
+  lResult: UnicodeString;
 begin
   aRequest.ReadResponse();
   aRequest.Message.SetAutoGeneratedNamespaces(DefaultNamespaces());
-  aRequest.Message.Read('Result', System.TypeInfo(AnsiString), lResult, []);
+  aRequest.Message.Read('Result', System.TypeInfo(UnicodeString), lResult, []);
   result := lResult;
   exit;
 end;
